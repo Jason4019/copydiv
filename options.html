@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CopyDiv Extension - 设置</title>
+  <link rel="stylesheet" href="styles/options.css">
+</head>
+<body>
+  <div class="container">
+    <h1>扩展设置</h1>
+    <div class="settings-section">
+      <div class="setting-item">
+        <label>
+          <input type="checkbox" id="enableExtension">
+          启用扩展
+        </label>
+      </div>
+      <div class="setting-item">
+        <label>
+          设置项 1:
+          <input type="text" id="setting1" placeholder="输入设置值">
+        </label>
+      </div>
+      <div class="setting-item">
+        <button id="saveBtn" class="btn-primary">保存设置</button>
+        <button id="resetBtn" class="btn-secondary">重置</button>
+      </div>
+    </div>
+    <div id="message" class="message"></div>
+  </div>
+  <script src="options.js"></script>
+</body>
+</html>
+
