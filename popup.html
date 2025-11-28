@@ -3,14 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CopyDiv Extension</title>
+  <title>常用词 - CopyDiv Extension</title>
   <link rel="stylesheet" href="styles/popup.css">
 </head>
 <body>
   <div class="container">
-    <h1>CopyDiv Extension</h1>
+    <h1>常用词</h1>
     <div class="content">
-      <button id="actionBtn" class="btn-primary">执行操作</button>
+      <div id="wordsList" class="words-list">
+        <!-- 动态渲染的常用词按钮列表 -->
+      </div>
+      <div id="emptyState" class="empty-state" style="display: none;">
+        <p>暂无常用词</p>
+        <a href="#" id="openOptions" class="link">前往设置添加</a>
+      </div>
       <div id="status" class="status"></div>
     </div>
   </div>

@@ -7,10 +7,16 @@ chrome.runtime.onInstalled.addListener((details) => {
     // 设置默认值
     chrome.storage.sync.set({
       enabled: true,
-      settings: {}
+      commonWords: [] // 常用词列表，数据结构：[{ id: number, text: string, createdAt: number }]
     });
   } else if (details.reason === 'update') {
     console.log('扩展已更新');
+    // 迁移旧数据或初始化新字段
+    chrome.storage.sync.get(['commonWords'], (result) => {
+      if (!result.commonWords) {
+        chrome.storage.sync.set({ commonWords: [] });
+      }
+    });
   }
 });
 

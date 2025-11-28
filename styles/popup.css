@@ -71,3 +71,63 @@ h1 {
   color: #721c24;
 }
 
+/* 常用词列表样式 */
+.words-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 400px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+}
+
+.word-btn {
+  width: 100%;
+  padding: 10px 12px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  text-align: left;
+  transition: all 0.2s;
+  word-break: break-word;
+}
+
+.word-btn:hover {
+  background: #f0f0f0;
+  border-color: #0078d4;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.word-btn:active {
+  transform: translateY(0);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 30px 20px;
+  color: #999;
+}
+
+.empty-state p {
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.link {
+  color: #0078d4;
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.status {
+  display: none;
+  margin-top: 10px;
+}
+
