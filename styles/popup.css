@@ -92,6 +92,8 @@ h1 {
   text-align: left;
   transition: all 0.2s;
   word-break: break-word;
+  white-space: pre-wrap; /* 支持换行显示 */
+  line-height: 1.5;
 }
 
 .word-btn:hover {

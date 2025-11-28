@@ -20,8 +20,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 添加常用词
   addBtn.addEventListener('click', addWord);
-  wordInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
+  wordInput.addEventListener('keydown', (e) => {
+    // Ctrl+Enter 或 Cmd+Enter 提交
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
       addWord();
     }
   });
@@ -29,11 +31,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // 编辑相关事件
   saveEditBtn.addEventListener('click', saveEdit);
   cancelEditBtn.addEventListener('click', cancelEdit);
-  editInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-      saveEdit();
-    } else if (e.key === 'Escape') {
+  editInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
       cancelEdit();
+    } else if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      saveEdit();
     }
   });
 
@@ -83,9 +86,10 @@ document.addEventListener('DOMContentLoaded', () => {
     item.className = 'word-item';
     item.dataset.id = word.id;
 
-    const textSpan = document.createElement('span');
+    const textSpan = document.createElement('div');
     textSpan.className = 'word-text';
     textSpan.textContent = word.text;
+    textSpan.style.whiteSpace = 'pre-wrap'; // 支持换行显示
 
     const actionsDiv = document.createElement('div');
     actionsDiv.className = 'word-actions';
@@ -113,17 +117,24 @@ document.addEventListener('DOMContentLoaded', () => {
    * 添加常用词
    */
   function addWord() {
-    const text = wordInput.value.trim();
+    const text = wordInput.value.trimEnd(); // 保留开头的换行，去除末尾空白
+    const trimmedText = text.trim(); // 用于验证是否为空
     
-    // 输入验证
-    if (!validateInput(text, inputError)) {
+    // 输入验证（使用 trim 后的文本检查是否为空，但长度检查使用原始文本）
+    if (!trimmedText) {
+      showInputError('请输入常用词');
+      return;
+    }
+    
+    if (text.length > 500) {
+      showInputError('常用词长度不能超过500个字符');
       return;
     }
 
     chrome.storage.sync.get(['commonWords'], (result) => {
       const words = result.commonWords || [];
       
-      // 检查是否重复
+      // 检查是否重复（比较时使用原始文本，保留换行）
       if (words.some(w => w.text === text)) {
         showInputError('该常用词已存在');
         return;
@@ -174,10 +185,17 @@ document.addEventListener('DOMContentLoaded', () => {
    * 保存编辑
    */
   function saveEdit() {
-    const text = editInput.value.trim();
+    const text = editInput.value.trimEnd(); // 保留开头的换行，去除末尾空白
+    const trimmedText = text.trim(); // 用于验证是否为空
     
-    // 输入验证
-    if (!validateInput(text, editError)) {
+    // 输入验证（使用 trim 后的文本检查是否为空，但长度检查使用原始文本）
+    if (!trimmedText) {
+      showEditError('请输入常用词');
+      return;
+    }
+    
+    if (text.length > 500) {
+      showEditError('常用词长度不能超过500个字符');
       return;
     }
 
@@ -251,11 +269,11 @@ document.addEventListener('DOMContentLoaded', () => {
       return false;
     }
 
-    if (text.length > 100) {
+    if (text.length > 500) {
       if (errorElement === inputError) {
-        showInputError('常用词长度不能超过100个字符');
+        showInputError('常用词长度不能超过500个字符');
       } else {
-        showEditError('常用词长度不能超过100个字符');
+        showEditError('常用词长度不能超过500个字符');
       }
       return false;
     }

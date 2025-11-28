@@ -53,7 +53,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const button = document.createElement('button');
     button.className = 'word-btn';
     button.textContent = word.text;
-    button.title = `点击复制：${word.text}`;
+    button.title = `点击复制：${word.text.replace(/\n/g, ' ')}`; // 提示中换行替换为空格
+    button.style.whiteSpace = 'pre-wrap'; // 支持换行显示
+    button.style.textAlign = 'left'; // 左对齐
     
     button.addEventListener('click', () => {
       copyToClipboard(word.text);
