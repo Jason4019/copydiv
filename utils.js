@@ -17,6 +17,20 @@
       return this.palette[index % this.palette.length];
     },
 
+    async getDefaultCategory() {
+      return new Promise((resolve) => {
+        chrome.storage.sync.get(['defaultCategory'], (result) => {
+          resolve(result.defaultCategory || '全部');
+        });
+      });
+    },
+
+    async setDefaultCategory(category) {
+      return new Promise((resolve) => {
+        chrome.storage.sync.set({ defaultCategory: category || '全部' }, () => resolve(category || '全部'));
+      });
+    },
+
     async getWords() {
       return new Promise((resolve) => {
         chrome.storage.sync.get(['commonWords'], (result) => {

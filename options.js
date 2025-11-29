@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const messageDiv = document.getElementById('message');
   const inputError = document.getElementById('inputError');
   const categoryTabs = document.getElementById('categoryTabs');
+  const defaultCategorySelect = document.getElementById('defaultCategorySelect');
   const editModal = document.getElementById('editModal');
   const editInput = document.getElementById('editInput');
   const editCategoryInput = document.getElementById('editCategory');
@@ -19,16 +20,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const state = {
     words: [],
     currentCategory: '全部',
+    defaultCategory: '全部',
     editingId: null,
   };
 
   // 初始化
-  loadWords();
+  init();
   CommonWordsUtils.onWordsChanged((words) => {
     state.words = words;
     renderCategoryTabs();
     renderWordsList();
   });
+
+  async function init() {
+    state.defaultCategory = await CommonWordsUtils.getDefaultCategory();
+    await loadWords();
+  }
 
   addBtn.addEventListener('click', addWord);
   wordInput.addEventListener('keydown', (e) => {
@@ -55,6 +62,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  if (defaultCategorySelect) {
+    defaultCategorySelect.addEventListener('change', async (e) => {
+      const value = e.target.value || '全部';
+      state.defaultCategory = value;
+      await CommonWordsUtils.setDefaultCategory(value);
+      showMessage(`已将 popup 默认标签设置为「${value}」`, 'info', 1800);
+    });
+  }
+
   async function loadWords() {
     state.words = await CommonWordsUtils.getWords();
     renderCategoryTabs();
@@ -70,7 +86,9 @@ document.addEventListener('DOMContentLoaded', () => {
       categories.add(getWordCategory(word));
     });
 
-    categories.forEach((category) => {
+    const categoryArray = Array.from(categories);
+
+    categoryArray.forEach((category) => {
       const btn = document.createElement('button');
       btn.className = 'category-tab';
       if (category === state.currentCategory) {
@@ -84,6 +102,22 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       categoryTabs.appendChild(btn);
     });
+
+    // 同步默认分类下拉选项
+    if (defaultCategorySelect) {
+      defaultCategorySelect.innerHTML = '';
+      categoryArray.forEach((category) => {
+        const option = document.createElement('option');
+        option.value = category;
+        option.textContent = category;
+        defaultCategorySelect.appendChild(option);
+      });
+
+      if (!categoryArray.includes(state.defaultCategory)) {
+        state.defaultCategory = '全部';
+      }
+      defaultCategorySelect.value = state.defaultCategory;
+    }
   }
 
   function renderWordsList() {

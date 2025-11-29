@@ -19,8 +19,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   init();
 
-  function init() {
-    loadWords();
+  async function init() {
+    state.currentCategory = await CommonWordsUtils.getDefaultCategory();
+    await loadWords();
     CommonWordsUtils.onWordsChanged((words) => {
       state.words = words;
       renderCategoryTabs();
