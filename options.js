@@ -16,23 +16,28 @@ document.addEventListener('DOMContentLoaded', () => {
   const cancelEditBtn = document.getElementById('cancelEditBtn');
   const editError = document.getElementById('editError');
 
-  let editingId = null; // 当前编辑的词条ID
-  let currentCategory = '全部'; // 当前筛选的分类
+  const state = {
+    words: [],
+    currentCategory: '全部',
+    editingId: null,
+  };
 
-  // 初始化：加载常用词列表
+  // 初始化
   loadWords();
+  CommonWordsUtils.onWordsChanged((words) => {
+    state.words = words;
+    renderCategoryTabs();
+    renderWordsList();
+  });
 
-  // 添加常用词
   addBtn.addEventListener('click', addWord);
   wordInput.addEventListener('keydown', (e) => {
-    // Ctrl+Enter 或 Cmd+Enter 提交
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
       e.preventDefault();
       addWord();
     }
   });
 
-  // 编辑相关事件
   saveEditBtn.addEventListener('click', saveEdit);
   cancelEditBtn.addEventListener('click', cancelEdit);
   editInput.addEventListener('keydown', (e) => {
@@ -44,356 +49,257 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // 点击模态框外部关闭
   editModal.addEventListener('click', (e) => {
     if (e.target === editModal) {
       cancelEdit();
     }
   });
 
-  /**
-   * 加载常用词列表
-   */
-  function loadWords() {
-    chrome.storage.sync.get(['commonWords'], (result) => {
-      const words = result.commonWords || [];
-      renderCategoryTabs(words);
-      renderWordsList(words);
-    });
+  async function loadWords() {
+    state.words = await CommonWordsUtils.getWords();
+    renderCategoryTabs();
+    renderWordsList();
   }
 
-  /**
-   * 渲染分类标签
-   */
-  function renderCategoryTabs(words) {
+  function renderCategoryTabs() {
     if (!categoryTabs) return;
 
     categoryTabs.innerHTML = '';
-
-    const categoriesSet = new Set();
-    categoriesSet.add('全部');
-    words.forEach((w) => {
-      const cat = w.category && w.category.trim() ? w.category.trim() : '默认';
-      categoriesSet.add(cat);
+    const categories = new Set(['全部']);
+    state.words.forEach((word) => {
+      categories.add(getWordCategory(word));
     });
 
-    const categories = Array.from(categoriesSet);
-
-    categories.forEach((cat) => {
+    categories.forEach((category) => {
       const btn = document.createElement('button');
       btn.className = 'category-tab';
-      if (cat === currentCategory) {
+      if (category === state.currentCategory) {
         btn.classList.add('active');
       }
-      btn.textContent = cat;
+      btn.textContent = category;
       btn.addEventListener('click', () => {
-        currentCategory = cat;
-        renderCategoryTabs(words);
-        renderWordsList(words);
+        state.currentCategory = category;
+        renderCategoryTabs();
+        renderWordsList();
       });
       categoryTabs.appendChild(btn);
     });
   }
 
-  /**
-   * 渲染常用词列表
-   */
-  function renderWordsList(words) {
+  function renderWordsList() {
     wordsList.innerHTML = '';
 
-    const filteredWords = currentCategory === '全部'
-      ? words
-      : words.filter((w) => {
-          const cat = w.category && w.category.trim() ? w.category.trim() : '默认';
-          return cat === currentCategory;
-        });
-
-    if (filteredWords.length === 0) {
+    if (state.words.length === 0) {
       emptyState.style.display = 'block';
       wordsList.style.display = 'none';
       return;
     }
 
-    if (words.length === 0) {
+    const filtered = state.currentCategory === '全部'
+      ? state.words
+      : state.words.filter((word) => getWordCategory(word) === state.currentCategory);
+
+    if (filtered.length === 0) {
       emptyState.style.display = 'block';
       wordsList.style.display = 'none';
       return;
     }
 
     emptyState.style.display = 'none';
-    wordsList.style.display = 'block';
+    wordsList.style.display = 'flex';
+    wordsList.style.flexDirection = 'column';
+    wordsList.style.gap = '10px';
 
-    filteredWords.forEach((word) => {
-      const wordItem = createWordItem(word);
-      wordsList.appendChild(wordItem);
+    filtered.forEach((word) => {
+      const item = document.createElement('div');
+      item.className = 'word-item';
+      item.dataset.id = word.id;
+
+      const colorDot = document.createElement('span');
+      colorDot.className = 'word-color-dot';
+      colorDot.style.backgroundColor = word.color || CommonWordsUtils.getDefaultColor(word.id || 0);
+
+      const textSpan = document.createElement('div');
+      textSpan.className = 'word-text';
+      textSpan.textContent = word.text;
+      textSpan.style.whiteSpace = 'pre-wrap';
+
+      const actionsDiv = document.createElement('div');
+      actionsDiv.className = 'word-actions';
+
+      const editBtn = document.createElement('button');
+      editBtn.className = 'btn-edit';
+      editBtn.textContent = '编辑';
+      editBtn.addEventListener('click', () => editWord(word.id));
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'btn-delete';
+      deleteBtn.textContent = '删除';
+      deleteBtn.addEventListener('click', () => deleteWord(word.id));
+
+      actionsDiv.appendChild(editBtn);
+      actionsDiv.appendChild(deleteBtn);
+
+      item.appendChild(colorDot);
+      item.appendChild(textSpan);
+      item.appendChild(actionsDiv);
+      wordsList.appendChild(item);
     });
   }
 
-  /**
-   * 创建常用词列表项
-   */
-  function createWordItem(word) {
-    const item = document.createElement('div');
-    item.className = 'word-item';
-    item.dataset.id = word.id;
+  async function addWord() {
+    const rawText = wordInput.value.trimEnd();
+    if (!validateText(rawText, inputError)) {
+      return;
+    }
 
-    const color = word.color || getDefaultColor(word.id || 0);
+    const words = await CommonWordsUtils.getWords();
+    if (words.some((w) => w.text === rawText)) {
+      showInputError('该常用词已存在');
+      return;
+    }
 
-    const colorDot = document.createElement('span');
-    colorDot.className = 'word-color-dot';
-    colorDot.style.backgroundColor = color;
+    const newId = words.length > 0 ? Math.max(...words.map((w) => w.id)) + 1 : 1;
+    const newWord = {
+      id: newId,
+      text: rawText,
+      createdAt: Date.now(),
+      color: CommonWordsUtils.getDefaultColor(newId),
+      category: '默认',
+    };
 
-    const textSpan = document.createElement('div');
-    textSpan.className = 'word-text';
-    textSpan.textContent = word.text;
-    textSpan.style.whiteSpace = 'pre-wrap'; // 支持换行显示
+    words.push(newWord);
+    await CommonWordsUtils.saveWords(words);
 
-    const actionsDiv = document.createElement('div');
-    actionsDiv.className = 'word-actions';
-
-    const editBtn = document.createElement('button');
-    editBtn.className = 'btn-edit';
-    editBtn.textContent = '编辑';
-    editBtn.addEventListener('click', () => editWord(word.id));
-
-    const deleteBtn = document.createElement('button');
-    deleteBtn.className = 'btn-delete';
-    deleteBtn.textContent = '删除';
-    deleteBtn.addEventListener('click', () => deleteWord(word.id));
-
-    actionsDiv.appendChild(editBtn);
-    actionsDiv.appendChild(deleteBtn);
-
-    item.appendChild(colorDot);
-    item.appendChild(textSpan);
-    item.appendChild(actionsDiv);
-
-    return item;
+    wordInput.value = '';
+    clearInputError();
+    showMessage('🎉 已添加到常用词列表', 'success');
   }
 
-  /**
-   * 添加常用词
-   */
-  function addWord() {
-    const text = wordInput.value.trimEnd(); // 保留开头的换行，去除末尾空白
-    const trimmedText = text.trim(); // 用于验证是否为空
-    
-    // 输入验证（使用 trim 后的文本检查是否为空，但长度检查使用原始文本）
-    if (!trimmedText) {
-      showInputError('请输入常用词');
-      return;
-    }
-    
-    if (text.length > 500) {
-      showInputError('常用词长度不能超过500个字符');
-      return;
-    }
+  async function editWord(id) {
+    const words = await CommonWordsUtils.getWords();
+    const word = words.find((w) => w.id === id);
+    if (!word) return;
 
-    chrome.storage.sync.get(['commonWords'], (result) => {
-      const words = result.commonWords || [];
-      
-      // 检查是否重复（比较时使用原始文本，保留换行）
-      if (words.some(w => w.text === text)) {
-        showInputError('该常用词已存在');
-        return;
-      }
-
-      // 生成新ID
-      const newId = words.length > 0 
-        ? Math.max(...words.map(w => w.id)) + 1 
-        : 1;
-
-      // 添加新词
-      const newWord = {
-        id: newId,
-        text: text,
-        createdAt: Date.now(),
-        color: getDefaultColor(newId),
-        category: '默认'
-      };
-
-      words.push(newWord);
-      
-      chrome.storage.sync.set({ commonWords: words }, () => {
-        wordInput.value = '';
-        clearInputError();
-        loadWords();
-        showMessage('常用词添加成功！', 'success');
-      });
-    });
-  }
-
-  /**
-   * 编辑常用词
-   */
-  function editWord(id) {
-    chrome.storage.sync.get(['commonWords'], (result) => {
-      const words = result.commonWords || [];
-      const word = words.find(w => w.id === id);
-      
-      if (word) {
-        editingId = id;
-        editInput.value = word.text;
-        if (editCategoryInput) {
-          editCategoryInput.value = word.category || '默认';
-        }
-        if (editColorInput) {
-          editColorInput.value = word.color || getDefaultColor(word.id || 0);
-        }
-        editModal.style.display = 'flex';
-        editInput.focus();
-        clearEditError();
-      }
-    });
-  }
-
-  /**
-   * 保存编辑
-   */
-  function saveEdit() {
-    const text = editInput.value.trimEnd(); // 保留开头的换行，去除末尾空白
-    const trimmedText = text.trim(); // 用于验证是否为空
-    const category = editCategoryInput ? editCategoryInput.value.trim() : '';
-    const color = editColorInput ? editColorInput.value : '';
-    
-    // 输入验证（使用 trim 后的文本检查是否为空，但长度检查使用原始文本）
-    if (!trimmedText) {
-      showEditError('请输入常用词');
-      return;
-    }
-    
-    if (text.length > 500) {
-      showEditError('常用词长度不能超过500个字符');
-      return;
-    }
-
-    if (editingId === null) {
-      return;
-    }
-
-    chrome.storage.sync.get(['commonWords'], (result) => {
-      const words = result.commonWords || [];
-      
-      // 检查是否与其他词重复
-      const duplicateWord = words.find(w => w.text === text && w.id !== editingId);
-      if (duplicateWord) {
-        showEditError('该常用词已存在');
-        return;
-      }
-
-      // 更新词条
-      const wordIndex = words.findIndex(w => w.id === editingId);
-      if (wordIndex !== -1) {
-        words[wordIndex].text = text;
-        words[wordIndex].category = category || '默认';
-        words[wordIndex].color = color || getDefaultColor(words[wordIndex].id || 0);
-        
-        chrome.storage.sync.set({ commonWords: words }, () => {
-          cancelEdit();
-          loadWords();
-          showMessage('常用词更新成功！', 'success');
-        });
-      }
-    });
-  }
-
-  /**
-   * 取消编辑
-   */
-  function cancelEdit() {
-    editingId = null;
-    editInput.value = '';
-    editModal.style.display = 'none';
+    state.editingId = id;
+    editInput.value = word.text;
+    editCategoryInput.value = getWordCategory(word);
+    editColorInput.value = word.color || CommonWordsUtils.getDefaultColor(word.id || 0);
     clearEditError();
+    editModal.style.display = 'flex';
+    editInput.focus();
   }
 
-  /**
-   * 删除常用词
-   */
-  function deleteWord(id) {
-    if (!confirm('确定要删除这个常用词吗？')) {
+  async function saveEdit() {
+    if (state.editingId === null) return;
+
+    const rawText = editInput.value.trimEnd();
+    if (!validateText(rawText, editError)) {
       return;
     }
 
-    chrome.storage.sync.get(['commonWords'], (result) => {
-      const words = result.commonWords || [];
-      const filteredWords = words.filter(w => w.id !== id);
-      
-      chrome.storage.sync.set({ commonWords: filteredWords }, () => {
-        loadWords();
-        showMessage('常用词已删除', 'success');
-      });
-    });
-  }
+    const category = editCategoryInput.value.trim() || '默认';
+    const color = editColorInput.value || CommonWordsUtils.getDefaultColor(state.editingId);
 
-  /**
-   * 获取默认颜色（根据 id 或索引生成）
-   */
-  function getDefaultColor(index) {
-    const palette = [
-      '#0078d4', // 蓝
-      '#107c10', // 绿
-      '#d83b01', // 橙
-      '#5c2d91', // 紫
-      '#038387', // 青
-      '#e3008c', // 粉
-      '#8e562e', // 棕
-      '#0063b1', // 深蓝
-    ];
-    if (index === undefined || index === null) {
-      return palette[0];
+    const words = await CommonWordsUtils.getWords();
+    const duplicate = words.find((w) => w.text === rawText && w.id !== state.editingId);
+    if (duplicate) {
+      showEditError('该常用词已存在');
+      return;
     }
-    return palette[index % palette.length];
+
+    const index = words.findIndex((w) => w.id === state.editingId);
+    if (index === -1) return;
+
+    words[index] = {
+      ...words[index],
+      text: rawText,
+      category,
+      color,
+    };
+
+    await CommonWordsUtils.saveWords(words);
+    showMessage('✅ 常用词已更新', 'success');
+    cancelEdit();
   }
 
-  /**
-   * 显示输入错误
-   */
+  function cancelEdit() {
+    state.editingId = null;
+    editInput.value = '';
+    editCategoryInput.value = '默认';
+    editColorInput.value = '#0078d4';
+    clearEditError();
+    editModal.style.display = 'none';
+  }
+
+  async function deleteWord(id) {
+    const words = await CommonWordsUtils.getWords();
+    const target = words.find((w) => w.id === id);
+    if (!target) return;
+
+    if (!confirm(`确认删除“${target.text.slice(0, 20)}”吗？`)) {
+      return;
+    }
+
+    const filtered = words.filter((w) => w.id !== id);
+    await CommonWordsUtils.saveWords(filtered);
+    showMessage('🗑 已删除', 'info');
+  }
+
+  // 校验 & 提示
+  function validateText(text, errorElement) {
+    const trimmed = text.trim();
+    if (!trimmed) {
+      if (errorElement === inputError) {
+        showInputError('请输入常用词');
+      } else {
+        showEditError('请输入常用词');
+      }
+      return false;
+    }
+
+    if (text.length > 500) {
+      if (errorElement === inputError) {
+        showInputError('常用词长度不能超过500个字符');
+      } else {
+        showEditError('常用词长度不能超过500个字符');
+      }
+      return false;
+    }
+
+    return true;
+  }
+
   function showInputError(message) {
     inputError.textContent = message;
     inputError.style.display = 'block';
   }
 
-  /**
-   * 清除输入错误
-   */
   function clearInputError() {
     inputError.textContent = '';
     inputError.style.display = 'none';
   }
 
-  /**
-   * 显示编辑错误
-   */
   function showEditError(message) {
     editError.textContent = message;
     editError.style.display = 'block';
   }
 
-  /**
-   * 清除编辑错误
-   */
   function clearEditError() {
     editError.textContent = '';
     editError.style.display = 'none';
   }
 
-  /**
-   * 显示消息提示
-   */
-  function showMessage(text, type) {
+  function showMessage(text, type = 'info', duration = 2200) {
     messageDiv.textContent = text;
     messageDiv.className = `message ${type}`;
     setTimeout(() => {
       messageDiv.textContent = '';
       messageDiv.className = 'message';
-    }, 3000);
+    }, duration);
   }
 
-  // 监听存储变化，实现自动刷新
-  chrome.storage.onChanged.addListener((changes, areaName) => {
-    if (areaName === 'sync' && changes.commonWords) {
-      loadWords();
-    }
-  });
+  function getWordCategory(word) {
+    return (word.category && word.category.trim()) ? word.category.trim() : '默认';
+  }
 });

@@ -7,75 +7,70 @@ document.addEventListener('DOMContentLoaded', () => {
   const openOptionsLink = document.getElementById('openOptions');
   const categoryTabs = document.getElementById('categoryTabs');
 
-  let currentCategory = '全部';
+  const state = {
+    words: [],
+    currentCategory: '全部',
+  };
 
-  // 打开设置页面
   openOptionsLink.addEventListener('click', (e) => {
     e.preventDefault();
     chrome.runtime.openOptionsPage();
   });
 
-  // 初始化：加载常用词列表
-  loadWords();
+  init();
 
-  /**
-   * 加载常用词列表
-   */
-  function loadWords() {
-    chrome.storage.sync.get(['commonWords'], (result) => {
-      const words = result.commonWords || [];
-      renderCategoryTabs(words);
-      renderWordsList(words);
+  function init() {
+    loadWords();
+    CommonWordsUtils.onWordsChanged((words) => {
+      state.words = words;
+      renderCategoryTabs();
+      renderWordsList();
     });
   }
 
-  /**
-   * 渲染分类标签
-   */
-  function renderCategoryTabs(words) {
+  async function loadWords() {
+    state.words = await CommonWordsUtils.getWords();
+    renderCategoryTabs();
+    renderWordsList();
+  }
+
+  function renderCategoryTabs() {
     if (!categoryTabs) return;
 
     categoryTabs.innerHTML = '';
+    const categories = new Set(['全部']);
+    state.words.forEach((word) => categories.add(getWordCategory(word)));
 
-    const categoriesSet = new Set();
-    categoriesSet.add('全部');
-    words.forEach((w) => {
-      const cat = w.category && w.category.trim() ? w.category.trim() : '默认';
-      categoriesSet.add(cat);
-    });
-
-    const categories = Array.from(categoriesSet);
-
-    categories.forEach((cat) => {
+    categories.forEach((category) => {
       const btn = document.createElement('button');
       btn.className = 'category-tab';
-      if (cat === currentCategory) {
+      if (category === state.currentCategory) {
         btn.classList.add('active');
       }
-      btn.textContent = cat;
+      btn.textContent = category;
       btn.addEventListener('click', () => {
-        currentCategory = cat;
-        renderCategoryTabs(words);
-        renderWordsList(words);
+        state.currentCategory = category;
+        renderCategoryTabs();
+        renderWordsList();
       });
       categoryTabs.appendChild(btn);
     });
   }
 
-  /**
-   * 渲染常用词列表
-   */
-  function renderWordsList(words) {
+  function renderWordsList() {
     wordsList.innerHTML = '';
 
-    const filteredWords = currentCategory === '全部'
-      ? words
-      : words.filter((w) => {
-          const cat = w.category && w.category.trim() ? w.category.trim() : '默认';
-          return cat === currentCategory;
-        });
+    if (state.words.length === 0) {
+      emptyState.style.display = 'block';
+      wordsList.style.display = 'none';
+      return;
+    }
 
-    if (filteredWords.length === 0) {
+    const filtered = state.currentCategory === '全部'
+      ? state.words
+      : state.words.filter((word) => getWordCategory(word) === state.currentCategory);
+
+    if (filtered.length === 0) {
       emptyState.style.display = 'block';
       wordsList.style.display = 'none';
       return;
@@ -84,108 +79,69 @@ document.addEventListener('DOMContentLoaded', () => {
     emptyState.style.display = 'none';
     wordsList.style.display = 'flex';
 
-    filteredWords.forEach((word) => {
-      const wordBtn = createWordButton(word);
-      wordsList.appendChild(wordBtn);
+    filtered.forEach((word) => {
+      const button = document.createElement('button');
+      button.className = 'word-btn';
+      button.textContent = word.text;
+      button.title = `点击复制：${(word.text || '').replace(/\n/g, ' ')}`;
+      button.style.whiteSpace = 'pre-wrap';
+      button.style.textAlign = 'left';
+
+      const color = word.color || CommonWordsUtils.getDefaultColor(word.id || 0);
+      button.style.backgroundColor = color;
+      button.style.borderColor = color;
+      button.style.color = '#fff';
+
+      button.addEventListener('click', () => copyToClipboard(word.text));
+      wordsList.appendChild(button);
     });
   }
 
-  /**
-   * 创建常用词按钮
-   */
-  function createWordButton(word) {
-    const button = document.createElement('button');
-    button.className = 'word-btn';
-    button.textContent = word.text;
-    button.title = `点击复制：${(word.text || '').replace(/\n/g, ' ')}`; // 提示中换行替换为空格
-    button.style.whiteSpace = 'pre-wrap'; // 支持换行显示
-    button.style.textAlign = 'left'; // 左对齐
-
-    const color = word.color || getDefaultColor(word.id || 0);
-    button.style.backgroundColor = color;
-    button.style.borderColor = color;
-    button.style.color = '#fff';
-    
-    button.addEventListener('click', () => {
-      copyToClipboard(word.text);
-    });
-
-    return button;
-  }
-
-  /**
-   * 复制到剪贴板
-   */
   async function copyToClipboard(text) {
     try {
       await navigator.clipboard.writeText(text);
-      showStatus(`已复制：${text}`, 'success');
+      showStatus('已复制到剪贴板', 'success');
       closePopup();
     } catch (error) {
-      // 降级方案：使用传统方法
       try {
-        const textArea = document.createElement('textarea');
-        textArea.value = text;
-        textArea.style.position = 'fixed';
-        textArea.style.opacity = '0';
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-        showStatus(`已复制：${text}`, 'success');
+        fallbackCopy(text);
+        showStatus('已复制到剪贴板', 'success');
         closePopup();
       } catch (fallbackError) {
-        showStatus('复制失败，请重试', 'error');
+        showStatus('复制失败，请重试', 'error', 2600);
         console.error('复制失败:', fallbackError);
       }
     }
   }
 
-  /**
-   * 显示状态提示
-   */
-  function showStatus(message, type) {
+  function fallbackCopy(text) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.opacity = '0';
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textArea);
+  }
+
+  function showStatus(message, type, duration = 1200) {
     statusDiv.textContent = message;
     statusDiv.className = `status ${type}`;
     statusDiv.style.display = 'block';
-    
+
     setTimeout(() => {
       statusDiv.textContent = '';
       statusDiv.className = 'status';
       statusDiv.style.display = 'none';
-    }, 2000);
-  }
-
-  // 监听存储变化，实现自动刷新
-  chrome.storage.onChanged.addListener((changes, areaName) => {
-    if (areaName === 'sync' && changes.commonWords) {
-      loadWords();
-    }
-  });
-
-  /**
-   * 获取默认颜色（与 options 保持一致）
-   */
-  function getDefaultColor(index) {
-    const palette = [
-      '#0078d4', // 蓝
-      '#107c10', // 绿
-      '#d83b01', // 橙
-      '#5c2d91', // 紫
-      '#038387', // 青
-      '#e3008c', // 粉
-      '#8e562e', // 棕
-      '#0063b1', // 深蓝
-    ];
-    if (index === undefined || index === null) {
-      return palette[0];
-    }
-    return palette[index % palette.length];
+    }, duration);
   }
 
   function closePopup() {
-    setTimeout(() => {
-      window.close();
-    }, 100);
+    setTimeout(() => window.close(), 120);
+  }
+
+  function getWordCategory(word) {
+    return (word.category && word.category.trim()) ? word.category.trim() : '默认';
   }
 });

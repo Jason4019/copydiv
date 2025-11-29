@@ -20,22 +20,4 @@ chrome.runtime.onInstalled.addListener((details) => {
   }
 });
 
-// 监听来自内容脚本或弹出窗口的消息
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'getData') {
-    // 处理数据请求
-    chrome.storage.sync.get(null, (data) => {
-      sendResponse({ success: true, data });
-    });
-    return true; // 保持消息通道开放以支持异步响应
-  }
-});
-
-// 监听标签页更新
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (changeInfo.status === 'complete' && tab.url) {
-    // 标签页加载完成后的操作
-    console.log('标签页已加载:', tab.url);
-  }
-});
-
+// 当前版本无需长期运行的后台逻辑，仅保留安装/更新初始化
