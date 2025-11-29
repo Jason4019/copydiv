@@ -120,6 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       await navigator.clipboard.writeText(text);
       showStatus(`已复制：${text}`, 'success');
+      closePopup();
     } catch (error) {
       // 降级方案：使用传统方法
       try {
@@ -132,6 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.execCommand('copy');
         document.body.removeChild(textArea);
         showStatus(`已复制：${text}`, 'success');
+        closePopup();
       } catch (fallbackError) {
         showStatus('复制失败，请重试', 'error');
         console.error('复制失败:', fallbackError);
@@ -179,5 +181,11 @@ document.addEventListener('DOMContentLoaded', () => {
       return palette[0];
     }
     return palette[index % palette.length];
+  }
+
+  function closePopup() {
+    setTimeout(() => {
+      window.close();
+    }, 100);
   }
 });
