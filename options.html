@@ -10,36 +10,52 @@
   <div class="container">
     <h1>常用词设置</h1>
 
-    <!-- 分类标签 -->
-    <div class="category-header">
-      <div id="categoryTabs" class="category-tabs">
-        <!-- 动态渲染的分类标签 -->
-      </div>
-      <div class="default-category-setting">
-        <label for="defaultCategorySelect">popup 默认标签：</label>
-        <select id="defaultCategorySelect"></select>
-        <span class="hint">打开弹窗时优先显示的分类</span>
-      </div>
-    </div>
-    
-    <!-- 添加常用词表单 -->
-    <div class="add-word-section">
-      <h2>添加常用词</h2>
-      <div class="form-group">
-        <textarea id="wordInput" placeholder="输入常用词（支持换行）..." maxlength="500" rows="3"></textarea>
-        <button id="addBtn" class="btn-primary">添加</button>
-      </div>
-      <div id="inputError" class="error-message"></div>
+    <!-- 选项页标签 -->
+    <div class="options-tabs">
+      <button class="options-tab active" data-tab="words">常用词管理</button>
+      <button class="options-tab" data-tab="settings">配置管理</button>
     </div>
 
-    <!-- 常用词列表 -->
-    <div class="words-section">
-      <h2>常用词列表</h2>
-      <div id="wordsList" class="words-list">
-        <!-- 动态渲染的常用词列表 -->
+    <!-- 常用词管理 Tab -->
+    <div id="tab-words" class="tab-panel active">
+      <!-- 分类标签 -->
+      <div class="category-header">
+        <div id="categoryTabs" class="category-tabs">
+          <!-- 动态渲染的分类标签 -->
+        </div>
       </div>
-      <div id="emptyState" class="empty-state" style="display: none;">
-        <p>暂无常用词，请添加常用词</p>
+      
+      <!-- 添加常用词表单 -->
+      <div class="add-word-section">
+        <h2>添加常用词</h2>
+        <div class="form-group">
+          <textarea id="wordInput" placeholder="输入常用词（支持换行）..." maxlength="500" rows="3"></textarea>
+          <button id="addBtn" class="btn-primary">添加</button>
+        </div>
+        <div id="inputError" class="error-message"></div>
+      </div>
+
+      <!-- 常用词列表 -->
+      <div class="words-section">
+        <h2>常用词列表</h2>
+        <div id="wordsList" class="words-list">
+          <!-- 动态渲染的常用词列表 -->
+        </div>
+        <div id="emptyState" class="empty-state" style="display: none;">
+          <p>暂无常用词，请添加常用词</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 配置管理 Tab -->
+    <div id="tab-settings" class="tab-panel">
+      <h2>配置管理</h2>
+      <div class="settings-group">
+        <div class="default-category-setting">
+          <label for="defaultCategorySelect">popup 默认标签：</label>
+          <select id="defaultCategorySelect"></select>
+          <span class="hint">打开弹窗时优先显示的分类</span>
+        </div>
       </div>
     </div>
 

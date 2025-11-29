@@ -27,6 +27,43 @@ h1 {
   margin-bottom: 30px;
 }
 
+.options-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 4px;
+}
+
+.options-tab {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 16px;
+  background: #f3f3f3;
+  font-size: 13px;
+  cursor: pointer;
+  color: #555;
+  transition: all 0.2s;
+}
+
+.options-tab:hover {
+  background: #e5f1fb;
+  color: #005a9e;
+}
+
+.options-tab.active {
+  background: #0078d4;
+  color: #fff;
+}
+
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
 .settings-section {
   display: flex;
   flex-direction: column;

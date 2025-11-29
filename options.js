@@ -9,6 +9,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const inputError = document.getElementById('inputError');
   const categoryTabs = document.getElementById('categoryTabs');
   const defaultCategorySelect = document.getElementById('defaultCategorySelect');
+  const tabButtons = document.querySelectorAll('.options-tab');
+  const tabWords = document.getElementById('tab-words');
+  const tabSettings = document.getElementById('tab-settings');
   const editModal = document.getElementById('editModal');
   const editInput = document.getElementById('editInput');
   const editCategoryInput = document.getElementById('editCategory');
@@ -60,6 +63,23 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target === editModal) {
       cancelEdit();
     }
+  });
+
+  // 顶部 Tab 切换
+  tabButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const target = btn.getAttribute('data-tab');
+      tabButtons.forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      tabWords.classList.remove('active');
+      tabSettings.classList.remove('active');
+      if (target === 'settings') {
+        tabSettings.classList.add('active');
+      } else {
+        tabWords.classList.add('active');
+      }
+    });
   });
 
   if (defaultCategorySelect) {
