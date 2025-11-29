@@ -9,6 +9,11 @@
 <body>
   <div class="container">
     <h1>常用词设置</h1>
+
+    <!-- 分类标签 -->
+    <div id="categoryTabs" class="category-tabs">
+      <!-- 动态渲染的分类标签 -->
+    </div>
     
     <!-- 添加常用词表单 -->
     <div class="add-word-section">
@@ -36,6 +41,16 @@
       <div class="modal-content">
         <h3>编辑常用词</h3>
         <textarea id="editInput" placeholder="输入常用词（支持换行）..." maxlength="500" rows="3"></textarea>
+        <div class="modal-row">
+          <div class="modal-field">
+            <label for="editCategory">分类</label>
+            <input type="text" id="editCategory" placeholder="如：默认、工作、生活等">
+          </div>
+          <div class="modal-field">
+            <label for="editColor">颜色</label>
+            <input type="color" id="editColor">
+          </div>
+        </div>
         <div id="editError" class="error-message"></div>
         <div class="modal-actions">
           <button id="saveEditBtn" class="btn-primary">保存</button>

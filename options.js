@@ -7,13 +7,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const emptyState = document.getElementById('emptyState');
   const messageDiv = document.getElementById('message');
   const inputError = document.getElementById('inputError');
+  const categoryTabs = document.getElementById('categoryTabs');
   const editModal = document.getElementById('editModal');
   const editInput = document.getElementById('editInput');
+  const editCategoryInput = document.getElementById('editCategory');
+  const editColorInput = document.getElementById('editColor');
   const saveEditBtn = document.getElementById('saveEditBtn');
   const cancelEditBtn = document.getElementById('cancelEditBtn');
   const editError = document.getElementById('editError');
 
   let editingId = null; // 当前编辑的词条ID
+  let currentCategory = '全部'; // 当前筛选的分类
 
   // 初始化：加载常用词列表
   loadWords();
@@ -53,7 +57,41 @@ document.addEventListener('DOMContentLoaded', () => {
   function loadWords() {
     chrome.storage.sync.get(['commonWords'], (result) => {
       const words = result.commonWords || [];
+      renderCategoryTabs(words);
       renderWordsList(words);
+    });
+  }
+
+  /**
+   * 渲染分类标签
+   */
+  function renderCategoryTabs(words) {
+    if (!categoryTabs) return;
+
+    categoryTabs.innerHTML = '';
+
+    const categoriesSet = new Set();
+    categoriesSet.add('全部');
+    words.forEach((w) => {
+      const cat = w.category && w.category.trim() ? w.category.trim() : '默认';
+      categoriesSet.add(cat);
+    });
+
+    const categories = Array.from(categoriesSet);
+
+    categories.forEach((cat) => {
+      const btn = document.createElement('button');
+      btn.className = 'category-tab';
+      if (cat === currentCategory) {
+        btn.classList.add('active');
+      }
+      btn.textContent = cat;
+      btn.addEventListener('click', () => {
+        currentCategory = cat;
+        renderCategoryTabs(words);
+        renderWordsList(words);
+      });
+      categoryTabs.appendChild(btn);
     });
   }
 
@@ -62,7 +100,20 @@ document.addEventListener('DOMContentLoaded', () => {
    */
   function renderWordsList(words) {
     wordsList.innerHTML = '';
-    
+
+    const filteredWords = currentCategory === '全部'
+      ? words
+      : words.filter((w) => {
+          const cat = w.category && w.category.trim() ? w.category.trim() : '默认';
+          return cat === currentCategory;
+        });
+
+    if (filteredWords.length === 0) {
+      emptyState.style.display = 'block';
+      wordsList.style.display = 'none';
+      return;
+    }
+
     if (words.length === 0) {
       emptyState.style.display = 'block';
       wordsList.style.display = 'none';
@@ -72,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
     emptyState.style.display = 'none';
     wordsList.style.display = 'block';
 
-    words.forEach((word) => {
+    filteredWords.forEach((word) => {
       const wordItem = createWordItem(word);
       wordsList.appendChild(wordItem);
     });
@@ -85,6 +136,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const item = document.createElement('div');
     item.className = 'word-item';
     item.dataset.id = word.id;
+
+    const color = word.color || getDefaultColor(word.id || 0);
+
+    const colorDot = document.createElement('span');
+    colorDot.className = 'word-color-dot';
+    colorDot.style.backgroundColor = color;
 
     const textSpan = document.createElement('div');
     textSpan.className = 'word-text';
@@ -107,6 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
     actionsDiv.appendChild(editBtn);
     actionsDiv.appendChild(deleteBtn);
 
+    item.appendChild(colorDot);
     item.appendChild(textSpan);
     item.appendChild(actionsDiv);
 
@@ -149,7 +207,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const newWord = {
         id: newId,
         text: text,
-        createdAt: Date.now()
+        createdAt: Date.now(),
+        color: getDefaultColor(newId),
+        category: '默认'
       };
 
       words.push(newWord);
@@ -174,6 +234,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if (word) {
         editingId = id;
         editInput.value = word.text;
+        if (editCategoryInput) {
+          editCategoryInput.value = word.category || '默认';
+        }
+        if (editColorInput) {
+          editColorInput.value = word.color || getDefaultColor(word.id || 0);
+        }
         editModal.style.display = 'flex';
         editInput.focus();
         clearEditError();
@@ -187,6 +253,8 @@ document.addEventListener('DOMContentLoaded', () => {
   function saveEdit() {
     const text = editInput.value.trimEnd(); // 保留开头的换行，去除末尾空白
     const trimmedText = text.trim(); // 用于验证是否为空
+    const category = editCategoryInput ? editCategoryInput.value.trim() : '';
+    const color = editColorInput ? editColorInput.value : '';
     
     // 输入验证（使用 trim 后的文本检查是否为空，但长度检查使用原始文本）
     if (!trimmedText) {
@@ -217,6 +285,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const wordIndex = words.findIndex(w => w.id === editingId);
       if (wordIndex !== -1) {
         words[wordIndex].text = text;
+        words[wordIndex].category = category || '默认';
+        words[wordIndex].color = color || getDefaultColor(words[wordIndex].id || 0);
         
         chrome.storage.sync.set({ commonWords: words }, () => {
           cancelEdit();
@@ -257,28 +327,23 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-   * 输入验证
+   * 获取默认颜色（根据 id 或索引生成）
    */
-  function validateInput(text, errorElement) {
-    if (!text) {
-      if (errorElement === inputError) {
-        showInputError('请输入常用词');
-      } else {
-        showEditError('请输入常用词');
-      }
-      return false;
+  function getDefaultColor(index) {
+    const palette = [
+      '#0078d4', // 蓝
+      '#107c10', // 绿
+      '#d83b01', // 橙
+      '#5c2d91', // 紫
+      '#038387', // 青
+      '#e3008c', // 粉
+      '#8e562e', // 棕
+      '#0063b1', // 深蓝
+    ];
+    if (index === undefined || index === null) {
+      return palette[0];
     }
-
-    if (text.length > 500) {
-      if (errorElement === inputError) {
-        showInputError('常用词长度不能超过500个字符');
-      } else {
-        showEditError('常用词长度不能超过500个字符');
-      }
-      return false;
-    }
-
-    return true;
+    return palette[index % palette.length];
   }
 
   /**
