@@ -9,7 +9,9 @@
 - 🎨 **颜色标记**：为每个常用词设置不同颜色，方便视觉识别
 - 📋 **快速复制**：点击按钮即可复制到剪贴板，复制成功后自动关闭弹窗
 - ⚙️ **配置管理**：设置 popup 弹窗默认显示的分类
+- 🌐 **多语言支持**：支持中文和英文界面切换
 - 📚 **帮助文档**：内置详细的使用说明和常见问题解答
+- 🔒 **隐私保护**：数据完全本地存储，不收集任何个人信息
 - 🔄 **数据同步**：使用 Chrome 同步存储，数据在登录账户间自动同步
 
 ## 📦 安装步骤
@@ -80,6 +82,13 @@
 
 - 在"配置管理"页面可以设置 popup 默认标签
 - 设置后，下次打开弹窗时会自动显示该分类下的常用词
+- 可以切换界面语言（中文/English）
+
+### 多语言支持
+
+- 在"配置管理"页面可以切换界面语言
+- 支持中文（简体）和英文
+- 切换后界面文本会立即更新
 
 ## ⌨️ 快捷键
 
@@ -98,6 +107,7 @@ copydiv/
 ├── options.html          # 选项页面 HTML
 ├── options.js            # 选项页面脚本
 ├── utils.js              # 共享工具函数
+├── i18n.js               # 国际化语言文件
 ├── styles/               # 样式文件目录
 │   ├── popup.css         # 弹出窗口样式
 │   └── options.css       # 选项页面样式
@@ -105,9 +115,15 @@ copydiv/
 │   ├── icon16.png        # 16x16 图标
 │   ├── icon48.png        # 48x48 图标
 │   └── icon128.png       # 128x128 图标
+├── screenshots/          # 商店截图目录
+│   ├── screenshot-1-main-feature.png
+│   ├── screenshot-2-words-management.png
+│   ├── screenshot-3-settings.png
+│   ├── screenshot-4-multiline.png
+│   └── screenshot-5-help.png
 ├── README.md             # 项目说明文档
-├── TEST_GUIDE.md         # 测试指南
-└── QUICK_TEST.md         # 快速测试清单
+├── PRIVACY_POLICY.md     # 隐私政策（Markdown）
+└── PRIVACY_POLICY.html   # 隐私政策（HTML，用于 GitHub Pages）
 ```
 
 ## 🛠️ 技术栈
@@ -115,6 +131,7 @@ copydiv/
 - **Manifest V3**：使用最新的扩展标准
 - **Chrome Storage API**：数据存储和同步
 - **原生 JavaScript**：无依赖，轻量级
+- **国际化 (i18n)**：支持多语言切换
 - **现代 CSS**：响应式设计，支持换行显示
 
 ## 📝 开发说明
@@ -132,19 +149,31 @@ copydiv/
 ### 代码结构
 
 - `utils.js`：共享工具函数（颜色调色板、存储封装等）
-- `options.js`：选项页面逻辑（常用词管理、配置管理）
-- `popup.js`：弹出窗口逻辑（快速复制）
+- `i18n.js`：国际化模块（语言切换、文本翻译）
+- `options.js`：选项页面逻辑（常用词管理、配置管理、多语言）
+- `popup.js`：弹出窗口逻辑（快速复制、多语言）
 - `background.js`：后台服务（安装初始化）
 
 ## 🧪 测试
 
-详细测试指南请参考 [TEST_GUIDE.md](./TEST_GUIDE.md)
-
-快速测试清单请参考 [QUICK_TEST.md](./QUICK_TEST.md)
+1. 加载扩展后，测试添加、编辑、删除常用词功能
+2. 测试分类筛选和颜色标记功能
+3. 测试多语言切换功能
+4. 测试数据同步功能（在不同设备上登录同一账户）
+5. 测试复制功能和自动关闭弹窗
 
 ## 📄 许可证
 
 本项目采用 MIT 许可证开源。
+
+## 🔒 隐私政策
+
+本扩展完全保护您的隐私：
+- ✅ 所有数据存储在本地，不会上传到任何服务器
+- ✅ 不收集任何个人信息或浏览数据
+- ✅ 不使用任何第三方分析或追踪服务
+
+详细隐私政策请查看：[隐私政策](https://jason4019.github.io/copydiv/PRIVACY_POLICY.html)
 
 ## 🤝 贡献
 
@@ -168,7 +197,11 @@ copydiv/
 - 工具网站：https://favicon.io/
 - 使用条款：https://favicon.io/terms-of-use
 
+## 📸 截图
+
+扩展的主要界面截图可在 `screenshots/` 目录查看。
+
 ---
 
 **版本**: 1.0.0  
-**最后更新**: 2025
+**最后更新**: 2025年1月
