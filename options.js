@@ -489,16 +489,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
 
-      // 更新 Tab 按钮
+      // 更新 Tab 按钮（只更新文字，保留图标）
       const tabWordsBtn = document.querySelector('[data-tab="words"]');
       const tabSettingsBtn = document.querySelector('[data-tab="settings"]');
       const tabHelpBtn = document.querySelector('[data-tab="help"]');
       const tabAboutBtn = document.querySelector('[data-tab="about"]');
       
-      if (tabWordsBtn) tabWordsBtn.textContent = i18n.t('options.tab.words');
-      if (tabSettingsBtn) tabSettingsBtn.textContent = i18n.t('options.tab.settings');
-      if (tabHelpBtn) tabHelpBtn.textContent = i18n.t('options.tab.help');
-      if (tabAboutBtn) tabAboutBtn.textContent = i18n.t('options.tab.about');
+      if (tabWordsBtn) {
+        const span = tabWordsBtn.querySelector('span');
+        if (span) span.textContent = i18n.t('options.tab.words');
+      }
+      if (tabSettingsBtn) {
+        const span = tabSettingsBtn.querySelector('span');
+        if (span) span.textContent = i18n.t('options.tab.settings');
+      }
+      if (tabHelpBtn) {
+        const span = tabHelpBtn.querySelector('span');
+        if (span) span.textContent = i18n.t('options.tab.help');
+      }
+      if (tabAboutBtn) {
+        const span = tabAboutBtn.querySelector('span');
+        if (span) span.textContent = i18n.t('options.tab.about');
+      }
 
       // 更新标题
       const titleEl = document.querySelector('h1');

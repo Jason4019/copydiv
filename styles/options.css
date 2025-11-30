@@ -36,7 +36,7 @@ h1 {
 }
 
 .options-tab {
-  padding: 6px 14px;
+  padding: 8px 16px;
   border: none;
   border-radius: 16px;
   background: #f3f3f3;
@@ -44,16 +44,37 @@ h1 {
   cursor: pointer;
   color: #555;
   transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+}
+
+.options-tab .tab-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  transition: transform 0.2s;
 }
 
 .options-tab:hover {
   background: #e5f1fb;
   color: #005a9e;
+  transform: translateY(-1px);
+}
+
+.options-tab:hover .tab-icon {
+  transform: scale(1.1);
 }
 
 .options-tab.active {
   background: #0078d4;
   color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 120, 212, 0.3);
+}
+
+.options-tab.active .tab-icon {
+  transform: scale(1.05);
 }
 
 .tab-panel {
