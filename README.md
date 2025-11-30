@@ -162,6 +162,12 @@ copydiv/
 
 感谢使用 CopyDiv 扩展！如有问题或建议，欢迎在 GitHub 上提交 Issue。
 
+## 📄 图标许可
+
+本扩展的图标使用 [Favicon.io](https://favicon.io/) 生成。
+- 工具网站：https://favicon.io/
+- 使用条款：https://favicon.io/terms-of-use
+
 ---
 
 **版本**: 1.0.0  
