@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const inputError = document.getElementById('inputError');
   const categoryTabs = document.getElementById('categoryTabs');
   const defaultCategorySelect = document.getElementById('defaultCategorySelect');
+  const languageSelect = document.getElementById('languageSelect');
   const tabButtons = document.querySelectorAll('.options-tab');
   const tabWords = document.getElementById('tab-words');
   const tabSettings = document.getElementById('tab-settings');
@@ -24,8 +25,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const state = {
     words: [],
-    currentCategory: '全部',
-    defaultCategory: '全部',
+    currentCategory: '全部', // 初始值，会在 init 中更新
+    defaultCategory: '全部', // 初始值，会在 init 中更新
     editingId: null,
   };
 
@@ -38,8 +39,36 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   async function init() {
-    state.defaultCategory = await CommonWordsUtils.getDefaultCategory();
-    await loadWords();
+    // 确保 i18n 已加载
+    if (typeof i18n === 'undefined') {
+      console.error('i18n 未加载，使用默认中文');
+      // 如果 i18n 未加载，使用默认值继续运行
+      state.currentCategory = '全部';
+      state.defaultCategory = '全部';
+      await loadWords();
+      return;
+    }
+    
+    try {
+      const lang = await i18n.getLanguage();
+      i18n.currentLang = lang;
+      i18n.updateDocumentLang();
+      
+      const allText = i18n.t('all');
+      const defaultCat = await CommonWordsUtils.getDefaultCategory();
+      state.defaultCategory = defaultCat === '全部' ? allText : defaultCat;
+      state.currentCategory = state.defaultCategory;
+      
+      await loadWords();
+      await initLanguageSelect();
+      updateAllTexts();
+    } catch (error) {
+      console.error('初始化失败:', error);
+      // 使用默认值继续运行
+      state.currentCategory = '全部';
+      state.defaultCategory = '全部';
+      await loadWords();
+    }
   }
 
   addBtn.addEventListener('click', addWord);
@@ -94,10 +123,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (defaultCategorySelect) {
     defaultCategorySelect.addEventListener('change', async (e) => {
-      const value = e.target.value || '全部';
+      const allText = (typeof i18n !== 'undefined' && i18n.t) ? i18n.t('all') : '全部';
+      const value = e.target.value || allText;
       state.defaultCategory = value;
       await CommonWordsUtils.setDefaultCategory(value);
-      showMessage(`已将 popup 默认标签设置为「${value}」`, 'info', 1800);
+      const msg = (typeof i18n !== 'undefined' && i18n.t) 
+        ? i18n.t('options.message.defaultCategory', { value })
+        : `已将 popup 默认标签设置为「${value}」`;
+      showMessage(msg, 'info', 1800);
+    });
+  }
+
+  // 初始化语言选择器（延迟到 init 完成后）
+  async function initLanguageSelect() {
+    if (!languageSelect) return;
+    
+    try {
+      const currentLang = await i18n.getLanguage();
+      languageSelect.value = currentLang;
+      
+      languageSelect.addEventListener('change', async (e) => {
+        const lang = e.target.value || 'zh-CN';
+        await i18n.setLanguage(lang);
+        updateAllTexts();
+        showMessage(i18n.t('settings.language') + ': ' + (lang === 'zh-CN' ? '中文' : 'English'), 'success', 1800);
+      });
+    } catch (error) {
+      console.error('初始化语言选择器失败:', error);
+    }
+  }
+
+  // 监听语言变化
+  if (typeof i18n !== 'undefined') {
+    i18n.onLanguageChanged(() => {
+      updateAllTexts();
     });
   }
 
@@ -111,9 +170,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!categoryTabs) return;
 
     categoryTabs.innerHTML = '';
-    const categories = new Set(['全部']);
+    const allText = (typeof i18n !== 'undefined' && i18n.t) ? i18n.t('all') : '全部';
+    const defaultText = (typeof i18n !== 'undefined' && i18n.t) ? i18n.t('default') : '默认';
+    const categories = new Set([allText]);
     state.words.forEach((word) => {
-      categories.add(getWordCategory(word));
+      const cat = getWordCategory(word);
+      categories.add(cat === '默认' ? defaultText : cat);
     });
 
     const categoryArray = Array.from(categories);
@@ -144,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       if (!categoryArray.includes(state.defaultCategory)) {
-        state.defaultCategory = '全部';
+        state.defaultCategory = allText;
       }
       defaultCategorySelect.value = state.defaultCategory;
     }
@@ -159,9 +221,15 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    const filtered = state.currentCategory === '全部'
+    const allText = (typeof i18n !== 'undefined' && i18n.t) ? i18n.t('all') : '全部';
+    const filtered = state.currentCategory === allText || state.currentCategory === '全部'
       ? state.words
-      : state.words.filter((word) => getWordCategory(word) === state.currentCategory);
+      : state.words.filter((word) => {
+          const cat = getWordCategory(word);
+          const defaultText = (typeof i18n !== 'undefined' && i18n.t) ? i18n.t('default') : '默认';
+          const displayCat = cat === '默认' ? defaultText : cat;
+          return displayCat === state.currentCategory;
+        });
 
     if (filtered.length === 0) {
       emptyState.style.display = 'block';
@@ -193,12 +261,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const editBtn = document.createElement('button');
       editBtn.className = 'btn-edit';
-      editBtn.textContent = '编辑';
+      editBtn.textContent = (typeof i18n !== 'undefined' && i18n.t) ? i18n.t('edit') : '编辑';
       editBtn.addEventListener('click', () => editWord(word.id));
 
       const deleteBtn = document.createElement('button');
       deleteBtn.className = 'btn-delete';
-      deleteBtn.textContent = '删除';
+      deleteBtn.textContent = (typeof i18n !== 'undefined' && i18n.t) ? i18n.t('delete') : '删除';
       deleteBtn.addEventListener('click', () => deleteWord(word.id));
 
       actionsDiv.appendChild(editBtn);
@@ -219,17 +287,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const words = await CommonWordsUtils.getWords();
     if (words.some((w) => w.text === rawText)) {
-      showInputError('该常用词已存在');
+      showInputError((typeof i18n !== 'undefined' && i18n.t) ? i18n.t('options.error.duplicate') : '该常用词已存在');
       return;
     }
 
     const newId = words.length > 0 ? Math.max(...words.map((w) => w.id)) + 1 : 1;
+    const defaultCategory = (typeof i18n !== 'undefined' && i18n.t) ? i18n.t('default') : '默认';
     const newWord = {
       id: newId,
       text: rawText,
       createdAt: Date.now(),
       color: CommonWordsUtils.getDefaultColor(newId),
-      category: '默认',
+      category: defaultCategory,
     };
 
     words.push(newWord);
@@ -237,7 +306,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     wordInput.value = '';
     clearInputError();
-    showMessage('🎉 已添加到常用词列表', 'success');
+    showMessage((typeof i18n !== 'undefined' && i18n.t) ? i18n.t('options.message.added') : '🎉 已添加到常用词列表', 'success');
   }
 
   async function editWord(id) {
@@ -247,7 +316,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     state.editingId = id;
     editInput.value = word.text;
-    editCategoryInput.value = getWordCategory(word);
+    const cat = getWordCategory(word);
+    const defaultText = (typeof i18n !== 'undefined' && i18n.t) ? i18n.t('default') : '默认';
+    editCategoryInput.value = cat === '默认' ? defaultText : cat;
     editColorInput.value = word.color || CommonWordsUtils.getDefaultColor(word.id || 0);
     clearEditError();
     editModal.style.display = 'flex';
@@ -262,13 +333,14 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    const category = editCategoryInput.value.trim() || '默认';
+    const defaultCategory = (typeof i18n !== 'undefined' && i18n.t) ? i18n.t('default') : '默认';
+    const category = editCategoryInput.value.trim() || defaultCategory;
     const color = editColorInput.value || CommonWordsUtils.getDefaultColor(state.editingId);
 
     const words = await CommonWordsUtils.getWords();
     const duplicate = words.find((w) => w.text === rawText && w.id !== state.editingId);
     if (duplicate) {
-      showEditError('该常用词已存在');
+      showEditError((typeof i18n !== 'undefined' && i18n.t) ? i18n.t('options.error.duplicate') : '该常用词已存在');
       return;
     }
 
@@ -283,14 +355,14 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     await CommonWordsUtils.saveWords(words);
-    showMessage('✅ 常用词已更新', 'success');
+    showMessage((typeof i18n !== 'undefined' && i18n.t) ? i18n.t('options.message.updated') : '✅ 常用词已更新', 'success');
     cancelEdit();
   }
 
   function cancelEdit() {
     state.editingId = null;
     editInput.value = '';
-    editCategoryInput.value = '默认';
+    editCategoryInput.value = (typeof i18n !== 'undefined' && i18n.t) ? i18n.t('default') : '默认';
     editColorInput.value = '#0078d4';
     clearEditError();
     editModal.style.display = 'none';
@@ -301,32 +373,38 @@ document.addEventListener('DOMContentLoaded', () => {
     const target = words.find((w) => w.id === id);
     if (!target) return;
 
-    if (!confirm(`确认删除“${target.text.slice(0, 20)}”吗？`)) {
+    const confirmText = (typeof i18n !== 'undefined' && i18n.t) 
+      ? i18n.t('options.delete.confirm', { text: target.text.slice(0, 20) })
+      : `确认删除"${target.text.slice(0, 20)}"吗？`;
+    if (!confirm(confirmText)) {
       return;
     }
 
     const filtered = words.filter((w) => w.id !== id);
     await CommonWordsUtils.saveWords(filtered);
-    showMessage('🗑 已删除', 'info');
+    const deletedMsg = (typeof i18n !== 'undefined' && i18n.t) ? i18n.t('options.message.deleted') : '🗑 已删除';
+    showMessage(deletedMsg, 'info');
   }
 
   // 校验 & 提示
   function validateText(text, errorElement) {
     const trimmed = text.trim();
     if (!trimmed) {
+      const errorMsg = (typeof i18n !== 'undefined' && i18n.t) ? i18n.t('options.error.empty') : '请输入常用词';
       if (errorElement === inputError) {
-        showInputError('请输入常用词');
+        showInputError(errorMsg);
       } else {
-        showEditError('请输入常用词');
+        showEditError(errorMsg);
       }
       return false;
     }
 
     if (text.length > 500) {
+      const errorMsg = (typeof i18n !== 'undefined' && i18n.t) ? i18n.t('options.error.length') : '常用词长度不能超过500个字符';
       if (errorElement === inputError) {
-        showInputError('常用词长度不能超过500个字符');
+        showInputError(errorMsg);
       } else {
-        showEditError('常用词长度不能超过500个字符');
+        showEditError(errorMsg);
       }
       return false;
     }
@@ -364,7 +442,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function getWordCategory(word) {
-    return (word.category && word.category.trim()) ? word.category.trim() : '默认';
+    const defaultText = (typeof i18n !== 'undefined' && i18n.t) ? i18n.t('default') : '默认';
+    const cat = (word.category && word.category.trim()) ? word.category.trim() : defaultText;
+    // 兼容旧数据：如果分类是中文"默认"，转换为当前语言的"默认"
+    return cat === '默认' ? defaultText : cat;
   }
 
   // 加载关于页面信息
@@ -381,13 +462,68 @@ document.addEventListener('DOMContentLoaded', () => {
       const manifestVersionNumberEl = document.getElementById('manifestVersionNumber');
       
       if (appNameEl) appNameEl.textContent = manifest.name || 'CopyDiv';
-      if (appDescriptionEl) appDescriptionEl.textContent = manifest.description || '快速复制常用词';
+      if (appDescriptionEl) appDescriptionEl.textContent = manifest.description || ((typeof i18n !== 'undefined' && i18n.t) ? i18n.t('popup.title') : '快速复制常用词');
       if (appVersionEl) appVersionEl.textContent = manifest.version || '1.0.0';
       if (manifestNameEl) manifestNameEl.textContent = manifest.name || '-';
       if (manifestVersionEl) manifestVersionEl.textContent = manifest.version || '-';
       if (manifestVersionNumberEl) manifestVersionNumberEl.textContent = `v${manifest.manifest_version || 3}`;
     } catch (error) {
       console.error('加载关于信息失败:', error);
+    }
+  }
+
+  // 更新所有文本内容
+  function updateAllTexts() {
+    if (typeof i18n === 'undefined' || !i18n.t) {
+      console.warn('i18n 未加载，跳过文本更新');
+      return;
+    }
+
+    try {
+      // 更新所有带有 data-i18n 属性的元素
+      document.querySelectorAll('[data-i18n]').forEach((el) => {
+        const key = el.getAttribute('data-i18n');
+        if (key) {
+          el.textContent = i18n.t(key);
+        }
+      });
+
+      // 更新 Tab 按钮
+      const tabWordsBtn = document.querySelector('[data-tab="words"]');
+      const tabSettingsBtn = document.querySelector('[data-tab="settings"]');
+      const tabHelpBtn = document.querySelector('[data-tab="help"]');
+      const tabAboutBtn = document.querySelector('[data-tab="about"]');
+      
+      if (tabWordsBtn) tabWordsBtn.textContent = i18n.t('options.tab.words');
+      if (tabSettingsBtn) tabSettingsBtn.textContent = i18n.t('options.tab.settings');
+      if (tabHelpBtn) tabHelpBtn.textContent = i18n.t('options.tab.help');
+      if (tabAboutBtn) tabAboutBtn.textContent = i18n.t('options.tab.about');
+
+      // 更新标题
+      const titleEl = document.querySelector('h1');
+      if (titleEl) titleEl.textContent = i18n.t('options.title');
+
+      // 更新按钮文本
+      if (addBtn) addBtn.textContent = i18n.t('options.add.button');
+      if (saveEditBtn) saveEditBtn.textContent = i18n.t('save');
+      if (cancelEditBtn) cancelEditBtn.textContent = i18n.t('cancel');
+
+      // 更新输入框占位符
+      if (wordInput) wordInput.placeholder = i18n.t('options.add.placeholder');
+      if (editInput) editInput.placeholder = i18n.t('options.add.placeholder');
+      if (editCategoryInput) editCategoryInput.placeholder = i18n.t('options.edit.category.placeholder');
+
+      // 更新空状态
+      const emptyStateEl = document.getElementById('emptyState');
+      if (emptyStateEl) {
+        const p = emptyStateEl.querySelector('p');
+        if (p) p.textContent = i18n.t('options.words.empty');
+      }
+
+      // 更新分类标签（需要重新渲染）
+      renderCategoryTabs();
+    } catch (error) {
+      console.error('更新文本失败:', error);
     }
   }
 });

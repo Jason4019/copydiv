@@ -20,6 +20,7 @@
     async getDefaultCategory() {
       return new Promise((resolve) => {
         chrome.storage.sync.get(['defaultCategory'], (result) => {
+          // 兼容旧数据，如果存储的是中文"全部"，返回原值
           resolve(result.defaultCategory || '全部');
         });
       });
@@ -50,6 +51,20 @@
         if (areaName === 'sync' && changes.commonWords) {
           callback(changes.commonWords.newValue || []);
         }
+      });
+    },
+
+    async getLanguage() {
+      return new Promise((resolve) => {
+        chrome.storage.sync.get(['language'], (result) => {
+          resolve(result.language || 'zh-CN');
+        });
+      });
+    },
+
+    async setLanguage(lang) {
+      return new Promise((resolve) => {
+        chrome.storage.sync.set({ language: lang || 'zh-CN' }, () => resolve(lang || 'zh-CN'));
       });
     }
   };

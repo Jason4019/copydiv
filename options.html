@@ -29,7 +29,7 @@
       
       <!-- 添加常用词表单 -->
       <div class="add-word-section">
-        <h2>添加常用词</h2>
+        <h2 data-i18n="options.add.title">添加常用词</h2>
         <div class="form-group">
           <textarea id="wordInput" placeholder="输入常用词（支持换行）..." maxlength="500" rows="3"></textarea>
           <button id="addBtn" class="btn-primary">添加</button>
@@ -39,7 +39,7 @@
 
       <!-- 常用词列表 -->
       <div class="words-section">
-        <h2>常用词列表</h2>
+        <h2 data-i18n="options.words.title">常用词列表</h2>
         <div id="wordsList" class="words-list">
           <!-- 动态渲染的常用词列表 -->
         </div>
@@ -51,12 +51,20 @@
 
     <!-- 配置管理 Tab -->
     <div id="tab-settings" class="tab-panel">
-      <h2>配置管理</h2>
+      <h2 data-i18n="settings.title">配置管理</h2>
       <div class="settings-group">
         <div class="default-category-setting">
-          <label for="defaultCategorySelect">popup 默认标签：</label>
+          <label for="defaultCategorySelect" data-i18n="settings.defaultCategory">popup 默认标签：</label>
           <select id="defaultCategorySelect"></select>
-          <span class="hint">打开弹窗时优先显示的分类</span>
+          <span class="hint" data-i18n="settings.defaultCategory.hint">打开弹窗时优先显示的分类</span>
+        </div>
+        <div class="language-setting">
+          <label for="languageSelect" data-i18n="settings.language">语言：</label>
+          <select id="languageSelect">
+            <option value="zh-CN">中文</option>
+            <option value="en-US">English</option>
+          </select>
+          <span class="hint" data-i18n="settings.language.hint">选择界面显示语言</span>
         </div>
       </div>
     </div>
@@ -225,22 +233,22 @@
     <!-- 编辑模态框 -->
     <div id="editModal" class="modal" style="display: none;">
       <div class="modal-content">
-        <h3>编辑常用词</h3>
+        <h3 data-i18n="options.edit.title">编辑常用词</h3>
         <textarea id="editInput" placeholder="输入常用词（支持换行）..." maxlength="500" rows="3"></textarea>
         <div class="modal-row">
           <div class="modal-field">
-            <label for="editCategory">分类</label>
+            <label for="editCategory" data-i18n="options.edit.category">分类</label>
             <input type="text" id="editCategory" placeholder="如：默认、工作、生活等">
           </div>
           <div class="modal-field">
-            <label for="editColor">颜色</label>
+            <label for="editColor" data-i18n="options.edit.color">颜色</label>
             <input type="color" id="editColor">
           </div>
         </div>
         <div id="editError" class="error-message"></div>
         <div class="modal-actions">
-          <button id="saveEditBtn" class="btn-primary">保存</button>
-          <button id="cancelEditBtn" class="btn-secondary">取消</button>
+          <button id="saveEditBtn" class="btn-primary" data-i18n="save">保存</button>
+          <button id="cancelEditBtn" class="btn-secondary" data-i18n="cancel">取消</button>
         </div>
       </div>
     </div>
@@ -249,6 +257,7 @@
     <div id="message" class="message"></div>
   </div>
   <script src="utils.js"></script>
+  <script src="i18n.js"></script>
   <script src="options.js"></script>
 </body>
 </html>

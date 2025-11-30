@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const state = {
     words: [],
-    currentCategory: '全部',
+    currentCategory: '全部', // 初始值，会在 init 中更新
   };
 
   openOptionsLink.addEventListener('click', (e) => {
@@ -20,13 +20,41 @@ document.addEventListener('DOMContentLoaded', () => {
   init();
 
   async function init() {
-    state.currentCategory = await CommonWordsUtils.getDefaultCategory();
-    await loadWords();
-    CommonWordsUtils.onWordsChanged((words) => {
-      state.words = words;
-      renderCategoryTabs();
-      renderWordsList();
-    });
+    // 确保 i18n 已加载
+    if (typeof i18n === 'undefined' || !i18n.getLanguage) {
+      console.warn('i18n 未加载，使用默认中文');
+      state.currentCategory = '全部';
+      await loadWords();
+      return;
+    }
+    
+    try {
+      const lang = await i18n.getLanguage();
+      i18n.currentLang = lang;
+      i18n.updateDocumentLang();
+      
+      const defaultCat = await CommonWordsUtils.getDefaultCategory();
+      const allText = i18n.t('all');
+      state.currentCategory = defaultCat === '全部' ? allText : defaultCat;
+      await loadWords();
+      updateAllTexts();
+      
+      CommonWordsUtils.onWordsChanged((words) => {
+        state.words = words;
+        renderCategoryTabs();
+        renderWordsList();
+      });
+      
+      i18n.onLanguageChanged(() => {
+        updateAllTexts();
+        renderCategoryTabs();
+        renderWordsList();
+      });
+    } catch (error) {
+      console.error('初始化失败:', error);
+      state.currentCategory = '全部';
+      await loadWords();
+    }
   }
 
   async function loadWords() {
@@ -39,8 +67,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!categoryTabs) return;
 
     categoryTabs.innerHTML = '';
-    const categories = new Set(['全部']);
-    state.words.forEach((word) => categories.add(getWordCategory(word)));
+    const allText = (typeof i18n !== 'undefined' && i18n.t) ? i18n.t('all') : '全部';
+    const defaultText = (typeof i18n !== 'undefined' && i18n.t) ? i18n.t('default') : '默认';
+    const categories = new Set([allText]);
+    state.words.forEach((word) => {
+      const cat = getWordCategory(word);
+      categories.add(cat === '默认' ? defaultText : cat);
+    });
 
     categories.forEach((category) => {
       const btn = document.createElement('button');
@@ -67,9 +100,15 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    const filtered = state.currentCategory === '全部'
+    const allText = (typeof i18n !== 'undefined' && i18n.t) ? i18n.t('all') : '全部';
+    const filtered = state.currentCategory === allText || state.currentCategory === '全部'
       ? state.words
-      : state.words.filter((word) => getWordCategory(word) === state.currentCategory);
+      : state.words.filter((word) => {
+          const cat = getWordCategory(word);
+          const defaultText = (typeof i18n !== 'undefined' && i18n.t) ? i18n.t('default') : '默认';
+          const displayCat = cat === '默认' ? defaultText : cat;
+          return displayCat === state.currentCategory;
+        });
 
     if (filtered.length === 0) {
       emptyState.style.display = 'block';
@@ -101,17 +140,20 @@ document.addEventListener('DOMContentLoaded', () => {
   async function copyToClipboard(text) {
     try {
       await navigator.clipboard.writeText(text);
-      showStatus('已复制到剪贴板', 'success');
+      const successMsg = (typeof i18n !== 'undefined' && i18n.t) ? i18n.t('popup.copy.success') : '已复制到剪贴板';
+      showStatus(successMsg, 'success');
       closePopup();
     } catch (error) {
       try {
         fallbackCopy(text);
-        showStatus('已复制到剪贴板', 'success');
+        const successMsg = (typeof i18n !== 'undefined' && i18n.t) ? i18n.t('popup.copy.success') : '已复制到剪贴板';
+        showStatus(successMsg, 'success');
         closePopup();
       } catch (fallbackError) {
-        showStatus('复制失败，请重试', 'error', 2600);
+        const errorMsg = (typeof i18n !== 'undefined' && i18n.t) ? i18n.t('popup.copy.failed') : '复制失败，请重试';
+        showStatus(errorMsg, 'error', 2600);
         console.error('复制失败:', fallbackError);
-    }
+      }
     }
   }
 
@@ -143,6 +185,30 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function getWordCategory(word) {
-    return (word.category && word.category.trim()) ? word.category.trim() : '默认';
+    const defaultText = (typeof i18n !== 'undefined' && i18n.t) ? i18n.t('default') : '默认';
+    const cat = (word.category && word.category.trim()) ? word.category.trim() : defaultText;
+    return cat === '默认' ? defaultText : cat;
+  }
+
+  function updateAllTexts() {
+    if (typeof i18n === 'undefined' || !i18n.t) {
+      console.warn('i18n 未加载，跳过文本更新');
+      return;
+    }
+
+    try {
+      const titleEl = document.querySelector('h1');
+      if (titleEl) titleEl.textContent = i18n.t('popup.title');
+      
+      const emptyStateEl = document.getElementById('emptyState');
+      if (emptyStateEl) {
+        const p = emptyStateEl.querySelector('p');
+        const link = emptyStateEl.querySelector('a');
+        if (p) p.textContent = i18n.t('popup.empty');
+        if (link) link.textContent = i18n.t('popup.empty.link');
+      }
+    } catch (error) {
+      console.error('更新文本失败:', error);
+    }
   }
 });
