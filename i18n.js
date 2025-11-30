@@ -41,7 +41,8 @@
         'options.error.duplicate': '该常用词已存在',
         
         // Settings 页面
-        'settings.title': '配置管理',
+        'settings.title': '设置',
+        'settings.title.full': '配置管理',
         'settings.defaultCategory': 'popup 默认标签：',
         'settings.defaultCategory.hint': '打开弹窗时优先显示的分类',
         'settings.language': '语言：',
@@ -106,6 +107,7 @@
         
         // Settings page
         'settings.title': 'Settings',
+        'settings.title.full': 'Settings',
         'settings.defaultCategory': 'Popup Default Category:',
         'settings.defaultCategory.hint': 'Category to display when opening popup',
         'settings.language': 'Language:',

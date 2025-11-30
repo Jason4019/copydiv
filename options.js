@@ -146,7 +146,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const lang = e.target.value || 'zh-CN';
         await i18n.setLanguage(lang);
         updateAllTexts();
-        showMessage(i18n.t('settings.language') + ': ' + (lang === 'zh-CN' ? '中文' : 'English'), 'success', 1800);
+        const langText = lang === 'zh-CN' ? '中文' : 'English';
+        showMessage(i18n.t('settings.language') + ': ' + langText, 'success', 1800);
       });
     } catch (error) {
       console.error('初始化语言选择器失败:', error);

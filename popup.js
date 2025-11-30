@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const emptyState = document.getElementById('emptyState');
   const statusDiv = document.getElementById('status');
   const openOptionsLink = document.getElementById('openOptions');
+  const settingsBtn = document.getElementById('settingsBtn');
   const categoryTabs = document.getElementById('categoryTabs');
 
   const state = {
@@ -12,10 +13,20 @@ document.addEventListener('DOMContentLoaded', () => {
     currentCategory: '全部', // 初始值，会在 init 中更新
   };
 
-  openOptionsLink.addEventListener('click', (e) => {
-    e.preventDefault();
-    chrome.runtime.openOptionsPage();
-  });
+  // 设置按钮点击事件
+  if (settingsBtn) {
+    settingsBtn.addEventListener('click', () => {
+      chrome.runtime.openOptionsPage();
+    });
+  }
+
+  // 空状态中的链接点击事件
+  if (openOptionsLink) {
+    openOptionsLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      chrome.runtime.openOptionsPage();
+    });
+  }
 
   init();
 
@@ -199,6 +210,13 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const titleEl = document.querySelector('h1');
       if (titleEl) titleEl.textContent = i18n.t('popup.title');
+      
+      // 更新设置按钮的 title 和 aria-label
+      if (settingsBtn) {
+        const settingsText = i18n.t('settings.title') || '设置';
+        settingsBtn.setAttribute('title', settingsText);
+        settingsBtn.setAttribute('aria-label', settingsText);
+      }
       
       const emptyStateEl = document.getElementById('emptyState');
       if (emptyStateEl) {

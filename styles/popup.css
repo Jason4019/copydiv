@@ -17,11 +17,55 @@ body {
   padding: 20px;
 }
 
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+
 h1 {
   font-size: 18px;
   color: #333;
-  margin-bottom: 15px;
   text-align: center;
+  flex: 1;
+  margin: 0;
+}
+
+.settings-btn {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #666;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.settings-btn svg {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.3s ease;
+}
+
+.settings-btn:hover {
+  background: #f0f0f0;
+  color: #0078d4;
+}
+
+.settings-btn:hover svg {
+  transform: rotate(90deg);
+}
+
+.settings-btn:active {
+  background: #e0e0e0;
+  transform: scale(0.95);
 }
 
 .content {
