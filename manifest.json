@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "CopyDiv",
   "version": "1.0.0",
-  "description": "快速复制常用词",
+  "description": "快速管理和复制常用文本内容。支持分类管理、颜色标记、多行文本，数据本地存储，保护隐私。",
   "permissions": [
     "storage"
   ],
@@ -22,6 +22,7 @@
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
-  }
+  },
+  "privacy_policy_url": "https://jason4019.github.io/copydiv/PRIVACY_POLICY.html"
 }
 
