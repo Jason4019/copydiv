@@ -432,3 +432,103 @@ h1 {
   font-size: 14px;
 }
 
+/* 帮助页面样式 */
+.help-content {
+  max-width: 100%;
+}
+
+.help-section {
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #eee;
+}
+
+.help-section:last-child {
+  border-bottom: none;
+}
+
+.help-section h3 {
+  font-size: 18px;
+  color: #333;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.help-section h4 {
+  font-size: 15px;
+  color: #555;
+  margin-top: 16px;
+  margin-bottom: 8px;
+}
+
+.help-section p {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+
+.help-section ul,
+.help-section ol {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.8;
+  margin-left: 20px;
+  margin-bottom: 12px;
+}
+
+.help-section li {
+  margin-bottom: 6px;
+}
+
+.help-feature {
+  margin-bottom: 20px;
+  padding: 12px;
+  background: #f9f9f9;
+  border-radius: 6px;
+  border-left: 3px solid #0078d4;
+}
+
+.help-feature h4 {
+  margin-top: 0;
+  color: #0078d4;
+}
+
+.help-shortcuts {
+  list-style: none;
+  margin-left: 0;
+}
+
+.help-shortcuts li {
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+kbd {
+  display: inline-block;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-family: 'Courier New', monospace;
+  background: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  color: #333;
+}
+
+.help-faq h4 {
+  color: #0078d4;
+  font-weight: 600;
+  margin-top: 16px;
+  margin-bottom: 6px;
+}
+
+.help-faq p {
+  margin-left: 0;
+  margin-bottom: 16px;
+}
+

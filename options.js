@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const tabButtons = document.querySelectorAll('.options-tab');
   const tabWords = document.getElementById('tab-words');
   const tabSettings = document.getElementById('tab-settings');
+  const tabHelp = document.getElementById('tab-help');
   const editModal = document.getElementById('editModal');
   const editInput = document.getElementById('editInput');
   const editCategoryInput = document.getElementById('editCategory');
@@ -74,8 +75,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
       tabWords.classList.remove('active');
       tabSettings.classList.remove('active');
+      tabHelp.classList.remove('active');
+      
       if (target === 'settings') {
         tabSettings.classList.add('active');
+      } else if (target === 'help') {
+        tabHelp.classList.add('active');
       } else {
         tabWords.classList.add('active');
       }

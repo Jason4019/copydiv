@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (fallbackError) {
         showStatus('复制失败，请重试', 'error', 2600);
         console.error('复制失败:', fallbackError);
-      }
+    }
     }
   }
 

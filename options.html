@@ -14,6 +14,7 @@
     <div class="options-tabs">
       <button class="options-tab active" data-tab="words">常用词管理</button>
       <button class="options-tab" data-tab="settings">配置管理</button>
+      <button class="options-tab" data-tab="help">帮助</button>
     </div>
 
     <!-- 常用词管理 Tab -->
@@ -56,6 +57,114 @@
           <select id="defaultCategorySelect"></select>
           <span class="hint">打开弹窗时优先显示的分类</span>
         </div>
+      </div>
+    </div>
+
+    <!-- 帮助 Tab -->
+    <div id="tab-help" class="tab-panel">
+      <h2>使用帮助</h2>
+      <div class="help-content">
+        <section class="help-section">
+          <h3>📖 快速开始</h3>
+          <p>这是一个常用词管理扩展，可以帮助你快速复制常用的文本内容。</p>
+          <ol>
+            <li>在<strong>常用词管理</strong>页面添加你的常用词</li>
+            <li>点击浏览器工具栏的扩展图标打开弹窗</li>
+            <li>点击任意常用词按钮即可复制到剪贴板</li>
+          </ol>
+        </section>
+
+        <section class="help-section">
+          <h3>✨ 主要功能</h3>
+          <div class="help-feature">
+            <h4>1. 添加常用词</h4>
+            <ul>
+              <li>在文本框中输入常用词（支持多行换行）</li>
+              <li>点击<strong>添加</strong>按钮或按 <kbd>Ctrl+Enter</kbd>（Mac: <kbd>Cmd+Enter</kbd>）</li>
+              <li>每个常用词最多 500 个字符</li>
+            </ul>
+          </div>
+
+          <div class="help-feature">
+            <h4>2. 编辑常用词</h4>
+            <ul>
+              <li>点击常用词右侧的<strong>编辑</strong>按钮</li>
+              <li>可以修改文本、分类和颜色</li>
+              <li>按 <kbd>Ctrl+Enter</kbd> 保存，<kbd>Esc</kbd> 取消</li>
+            </ul>
+          </div>
+
+          <div class="help-feature">
+            <h4>3. 分类管理</h4>
+            <ul>
+              <li>在编辑时可以为常用词设置分类（如：工作、生活、默认等）</li>
+              <li>顶部标签可以快速筛选不同分类的常用词</li>
+              <li>支持自定义分类名称</li>
+            </ul>
+          </div>
+
+          <div class="help-feature">
+            <h4>4. 颜色标记</h4>
+            <ul>
+              <li>每个常用词可以设置不同的颜色</li>
+              <li>在弹窗中，常用词按钮会显示对应的颜色</li>
+              <li>方便快速识别和分类</li>
+            </ul>
+          </div>
+
+          <div class="help-feature">
+            <h4>5. 快速复制</h4>
+            <ul>
+              <li>点击弹窗中的常用词按钮即可复制</li>
+              <li>复制成功后弹窗会自动关闭</li>
+              <li>支持多行文本，换行符会被保留</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="help-section">
+          <h3>⚙️ 配置选项</h3>
+          <div class="help-feature">
+            <h4>popup 默认标签</h4>
+            <p>在<strong>配置管理</strong>页面可以设置弹窗打开时默认显示的分类。选择后，下次打开弹窗时会自动显示该分类下的常用词。</p>
+          </div>
+        </section>
+
+        <section class="help-section">
+          <h3>⌨️ 快捷键</h3>
+          <ul class="help-shortcuts">
+            <li><kbd>Ctrl+Enter</kbd> / <kbd>Cmd+Enter</kbd>：添加或保存常用词</li>
+            <li><kbd>Esc</kbd>：取消编辑</li>
+            <li><kbd>Enter</kbd>：在文本框中换行（多行输入）</li>
+          </ul>
+        </section>
+
+        <section class="help-section">
+          <h3>💡 使用技巧</h3>
+          <ul>
+            <li><strong>多行文本</strong>：在输入框中按 <kbd>Enter</kbd> 可以换行，适合保存地址、代码片段等多行内容</li>
+            <li><strong>分类管理</strong>：建议为不同类型的常用词设置不同的分类，方便快速查找</li>
+            <li><strong>颜色区分</strong>：使用不同颜色标记重要或不同类型的常用词</li>
+            <li><strong>自动关闭</strong>：复制成功后弹窗会自动关闭，无需手动操作</li>
+          </ul>
+        </section>
+
+        <section class="help-section">
+          <h3>❓ 常见问题</h3>
+          <div class="help-faq">
+            <h4>Q: 为什么复制后弹窗会自动关闭？</h4>
+            <p>A: 这是为了提升使用效率。复制成功后弹窗会自动关闭，你可以直接粘贴使用。如果复制失败，弹窗会保持打开并显示错误提示。</p>
+
+            <h4>Q: 如何删除常用词？</h4>
+            <p>A: 在常用词列表中，点击右侧的<strong>删除</strong>按钮，确认后即可删除。</p>
+
+            <h4>Q: 数据会同步吗？</h4>
+            <p>A: 是的，所有数据使用 Chrome 同步存储，会在你登录的 Chrome/Edge 账户间同步。</p>
+
+            <h4>Q: 可以导入/导出常用词吗？</h4>
+            <p>A: 当前版本暂不支持，未来版本可能会添加此功能。</p>
+          </div>
+        </section>
       </div>
     </div>
 
