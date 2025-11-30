@@ -532,3 +532,115 @@ kbd {
   margin-bottom: 16px;
 }
 
+/* 关于页面样式 */
+.about-content {
+  max-width: 100%;
+}
+
+.about-header {
+  text-align: center;
+  padding: 24px 0;
+  border-bottom: 2px solid #eee;
+  margin-bottom: 24px;
+}
+
+.about-header h3 {
+  font-size: 28px;
+  color: #0078d4;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.app-description {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 12px;
+}
+
+.version-info {
+  font-size: 14px;
+  color: #888;
+}
+
+.version-label {
+  font-weight: 500;
+}
+
+.version-value {
+  font-family: 'Courier New', monospace;
+  color: #0078d4;
+  font-weight: 600;
+}
+
+.about-section {
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.about-section:last-child {
+  border-bottom: none;
+}
+
+.about-section h4 {
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.info-label {
+  font-weight: 500;
+  color: #555;
+  min-width: 120px;
+}
+
+.info-value {
+  color: #333;
+  font-family: 'Courier New', monospace;
+}
+
+.link-item {
+  margin-bottom: 12px;
+}
+
+.github-link {
+  display: inline-flex;
+  align-items: center;
+  color: #0078d4;
+  text-decoration: none;
+  font-size: 14px;
+  padding: 8px 12px;
+  border: 1px solid #0078d4;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.github-link:hover {
+  background: #0078d4;
+  color: white;
+  text-decoration: none;
+}
+
+.github-link svg {
+  width: 16px;
+  height: 16px;
+}
+
+.license-text,
+.acknowledgment-text {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+  margin: 0;
+}
+

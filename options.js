@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const tabWords = document.getElementById('tab-words');
   const tabSettings = document.getElementById('tab-settings');
   const tabHelp = document.getElementById('tab-help');
+  const tabAbout = document.getElementById('tab-about');
   const editModal = document.getElementById('editModal');
   const editInput = document.getElementById('editInput');
   const editCategoryInput = document.getElementById('editCategory');
@@ -76,11 +77,15 @@ document.addEventListener('DOMContentLoaded', () => {
       tabWords.classList.remove('active');
       tabSettings.classList.remove('active');
       tabHelp.classList.remove('active');
+      tabAbout.classList.remove('active');
       
       if (target === 'settings') {
         tabSettings.classList.add('active');
       } else if (target === 'help') {
         tabHelp.classList.add('active');
+      } else if (target === 'about') {
+        tabAbout.classList.add('active');
+        loadAboutInfo();
       } else {
         tabWords.classList.add('active');
       }
@@ -360,5 +365,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function getWordCategory(word) {
     return (word.category && word.category.trim()) ? word.category.trim() : '默认';
+  }
+
+  // 加载关于页面信息
+  function loadAboutInfo() {
+    try {
+      const manifest = chrome.runtime.getManifest();
+      
+      // 更新版本信息
+      const appNameEl = document.getElementById('appName');
+      const appDescriptionEl = document.getElementById('appDescription');
+      const appVersionEl = document.getElementById('appVersion');
+      const manifestNameEl = document.getElementById('manifestName');
+      const manifestVersionEl = document.getElementById('manifestVersion');
+      const manifestVersionNumberEl = document.getElementById('manifestVersionNumber');
+      
+      if (appNameEl) appNameEl.textContent = manifest.name || 'CopyDiv';
+      if (appDescriptionEl) appDescriptionEl.textContent = manifest.description || '快速复制常用词';
+      if (appVersionEl) appVersionEl.textContent = manifest.version || '1.0.0';
+      if (manifestNameEl) manifestNameEl.textContent = manifest.name || '-';
+      if (manifestVersionEl) manifestVersionEl.textContent = manifest.version || '-';
+      if (manifestVersionNumberEl) manifestVersionNumberEl.textContent = `v${manifest.manifest_version || 3}`;
+    } catch (error) {
+      console.error('加载关于信息失败:', error);
+    }
   }
 });

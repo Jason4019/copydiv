@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "CopyDiv Extension",
+  "name": "CopyDiv",
   "version": "1.0.0",
-  "description": "一个实用的 Edge 浏览器扩展",
+  "description": "快速复制常用词",
   "permissions": [
     "storage"
   ],
